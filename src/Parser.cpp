@@ -19,8 +19,22 @@ Http_Server::~Http_Server()
     
 }
 //打印Http_HeadText
-void Http_PrintHttpHeadText()
+void Http_Server:: Http_PrintHttpHeadText()
 {
     
 }
 //打印Http_Header
+void Http_Server::Http_PrintHttpHead()
+{
+    
+}
+//解析http request
+void Http_Server::Http_ParserRequest(Http_Header * http_header)
+{
+    
+}
+//返回指定的用户请求
+bool Http_Server::Http_ReturnRequest(string & http_request,Http_Header *http_header)
+{
+    
+}
