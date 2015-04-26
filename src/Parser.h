@@ -26,8 +26,13 @@ struct Http_Header
 class Http_Server
 {
     public:
+    Http_Server();
+    ~Http_Server();
     void Http_PrintHttpHeadText(); //打印Http_HeadText
-    void Http_PrintHttpHead();     //打印Http_HeadText
+    void Http_PrintHttpHead();     //打印Http_Header
+    void Http_ParserRequest(Http_Header * http_header);     //解析http_request
+    bool Http_ReturnRequest(string & http_request,Http_Header *http_header);//返回指定的用户的请求
+
 
 }
 #endif
