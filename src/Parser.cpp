@@ -72,8 +72,8 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Message * http_heade
         return false;
     }
     //查找\r\n\r\n
-    Index=http_request.find(Crlf2,Index);
-    if(Index==string::npos)
+    Crlf_Pos=http_request.find(Crlf2,Index);//Crlf的位置
+    if(Crlf_Pos<=string::npos)
     {
         cout<<"Parser_Request:http_request have not a \"\r\n\r\n\"";
         return false;
@@ -83,6 +83,10 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Message * http_heade
     while(1)
     {
         Next=http_request.find(Crlf,Index+2);
+        if(Next<=Crlf_Pos)
+        {
+            Buff=http_request.substr(Index+2,Next-Index-2);
+        }
     }
 
 }
