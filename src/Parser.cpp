@@ -19,8 +19,8 @@ Http_Server::~Http_Server()
 {
     
 }
-//打印Http_HeadText
-void Http_Server:: Http_PrintHttpHeadText(Http_HeadText & head)
+//打印报文首部
+void Http_Server::Http_PrintHttpHeadText(Http_HeadText & head)
 {
     if(!head.empty())
     {
@@ -28,7 +28,7 @@ void Http_Server:: Http_PrintHttpHeadText(Http_HeadText & head)
             cout<<i->first<<":"<<i->second<<endl;
     }
 }
-//打印Http_Header
+//打印报文
 void Http_Server::Http_PrintHttpHead(Http_Header &head)
 {
     if(head==NULL)
@@ -42,7 +42,7 @@ void Http_Server::Http_PrintHttpHead(Http_Header &head)
     cout<<head->Body<<endl;
 }
 //解析http request
-bool  Http_Server::Http_ParserRequest(string & request,Http_Header * http_header)
+bool  Http_Server::Http_ParserRequest(string & request,Http_Message * http_header)
 {
     if(request.empty())
     {
@@ -57,15 +57,15 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Header * http_header
     string Crlf("\r\n"),Crlf2("\r\n\r\n");
     int Index=0,Next=0;
 
-    //解析Http请求的起始行
+    //解析Http请求行
     if(Next=http_request.find(Crlf,Index)==string::nops)
     {
-        string FIrst_line(http_request.substr(Index,Next-Index));
+        string First_line(http_request.substr(Index,Next-Index));
         Index=Next;
-        stringstream sstream(FIrst_line);
-        sstream>>(head->Method);
-        sstream>>(head->Url);
-        sstream>>(head->Version);
+       string [] FirstLine= First_line.split(" ");
+        FirstLine[0]=http_header->Method;
+        FirstLine[1]=http_header->Url;
+        FirstLine[2]=http_header->Version;
     }
     else{
         cout<<"Parser_Request:http_request is not have \\r\\n";
@@ -77,6 +77,12 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Header * http_header
     {
         cout<<"Parser_Request:http_request have not a \"\r\n\r\n\"";
         return false;
+    }
+    //解析首部
+    string  Buff,Key,value;
+    while(1)
+    {
+        Next=http_request.find(Crlf,Index+2);
     }
 
 }
