@@ -9,15 +9,18 @@
 using namespace std;
 #include "Parser.h"
 #include "string"
+
+
 //构造函数
 Http_Server::Http_Server()
 {
-
+     Http_Message *http_message=new Http_Message;
+    
 }
 //析构函数
 Http_Server::~Http_Server()
 {
-    
+    delete http_message;
 }
 //打印报文首部
 void Http_Server::Http_PrintHttpHeadText(Http_HeadText & head)
@@ -29,7 +32,7 @@ void Http_Server::Http_PrintHttpHeadText(Http_HeadText & head)
     }
 }
 //打印报文
-void Http_Server::Http_PrintHttpHead(Http_Header &head)
+void Http_Server::Http_PrintHttpHead(Http_Message &head)
 {
     if(head==NULL)
     {
@@ -62,7 +65,7 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Message * http_heade
     {
         string First_line(http_request.substr(Index,Next-Index));
         Index=Next;
-       string [] FirstLine= First_line.split(" ");
+        string [] FirstLine= First_line.split(" ");
         FirstLine[0]=http_header->Method;
         FirstLine[1]=http_header->Url;
         FirstLine[2]=http_header->Version;
@@ -78,20 +81,38 @@ bool  Http_Server::Http_ParserRequest(string & request,Http_Message * http_heade
         cout<<"Parser_Request:http_request have not a \"\r\n\r\n\"";
         return false;
     }
-    //解析首部
+    //解析请求头部
     string  Buff,Key,value;
     while(1)
     {
         Next=http_request.find(Crlf,Index+2);
         if(Next<=Crlf_Pos)
         {
+            //Buff为请求头部的一行
             Buff=http_request.substr(Index+2,Next-Index-2);
+            int Position=Buff.find(":");//找到“：”的位置
+            string Key=Buff,substr(0,Position); //头部字段名
+            string Value=BUff.substr(Position,Buff.length();)//头部值
+            http_header->Header.insert(pair<string,string>(Key,Value)); //获取一个首部
+            Index=Next;
+        }
+        else{
+            break;
         }
     }
+    //获取http请求的主体
+    http_header->body=http_request.substr(Crlf_Pos+4,http_request.size()-Crlf_Pos-4);
+    return true;
 
 }
 //返回指定的用户请求
-bool Http_Server::Http_ReturnRequest(string & http_request,Http_Header *http_header)
+bool Http_Server::Http_ReturnRequest(string & http_request,Http_HeadText &http_header)
 {
-    
+    if(http_header.empty())
+        return "";
+    http_header::const_iterator Pos=http_header.find(Key);
+    if(Pos==http_header.end())
+        return "";
+    return (*Pos).second;
+
 }

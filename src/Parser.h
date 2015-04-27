@@ -32,9 +32,10 @@ class Http_Server
     public:
     Http_Server();
     ~Http_Server();
+    Http_Message *http_message;     //请求报文                    
     void Http_PrintHttpHeadText(Http_HeadText & head); //打印请求首部
-    void Http_PrintHttpMessage(Http_Header & head);            //打印报文
+    void Http_PrintHttpMessage(Http_Message  & head);            //打印报文
     bool  Http_ParserRequest(string & request,Http_Message * http_header);     //解析http_request,并返回报文
-    string Http_ReturnRequest(string & key,Http_Message & header);//返回指定的用户的请求
+    string Http_ReturnRequest(string & key,Http_HeadText & header);//返回指定的用户的请求
 }
 #endif
