@@ -7,6 +7,7 @@
 
 #ifndef _HTTP-SERVER_H
 #define _HTTP-SERVER_H
+#include <stirng>
 #include <sys/epoll.h>
 using namespace std;
 
@@ -42,7 +43,7 @@ struct Epoll_Connfd
 #define TYHP_BADGATEWAY     502//作为代理或网关使用的服务器遇到了来自响应链中上游的无效响应
 #define TYHP_SRVUNAVAILABLE 503 //服务器目前无法提供请求服务，过一段时间后可以恢复
 /*
-    MIME定义
+    MIME定义,该资源的媒体定义
 */
 struct Mime_struct
 {
@@ -50,7 +51,7 @@ struct Mime_struct
     stirng Value;
 };
 
-Mime_struct Http_Mime[]=
+Mime_struct Mime_content[]=
 {
             {".html", "text/html"},
             {".xml", "text/xml"},
@@ -71,5 +72,41 @@ Mime_struct Http_Mime[]=
             {".tar", "application/x-tar"},
             {NULL ,NULL}
 };
+#根据Type，将MIME转换为对应Value
+const char * MimeTvalue(const char* type)
+{
+  
+  for(int i=0;Mime_content[i].Type!=NULL;i++)
+    if(type=Mime_content[i].Type)
+      return Mime_content[i].Value
+  return NULL
+}
+
+#请求回应语句
+string Ok="OK"
+string BadRequest="Bad request"
+string Forbid="Forbid"
+string Notfind="Not Found"
+string Noimplent="No Implemented"
+
+#通过http状态码 返回请求回应语句
+string Response(int http_sign)
+
+#请求首部
+#define TYHP_ACCEPTRANGE_HEAD            "Accpet-Range"
+#define    TYHP_AGE_HEAD                     "Age"
+#define    TYHP_ALLOW_HEAD                    "Allow"
+#define    TYHP_CONTENTBASE_HEAD            "Content-Base"
+#define    TYHP_CONTENTLENGTH_HEAD            "Content-Length"
+#define    TYHP_CONTENTLOCATION_HEAD        "Content-Location"
+#define    TYHP_CONTENTRANGE_HEAD            "Content-Range"
+#define    TYHP_CONTENTTYPE_HEAD            "Content-Type"
+#define    TYHP_DATE_HEAD                    "Date"
+#define    TYHP_EXPIRES_HEAD                "Expires"
+#define    TYHP_LAST_MODIFIED_HEAD            "Last-Modified"
+#define    TYHP_LOCATION_HEAD                 "Location"
+#define    TYHP_PUBLIC_HEAD                "Public"
+#define TYHP_RANGE_HEAD                 "Range"
+#define    TYHP_SERVER_HEAD                "Server"
 
 #endif
