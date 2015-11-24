@@ -20,11 +20,26 @@ int main()
     socklen_t           addrlen;
     pthread_attr_t      pthread_attr;
     pthread_t           thread_id;
-    
-    int listen_fd,epoll_fd,conn_fd,nfds,on=1;
+    epollfd_connfd      epoll_connfd;
+    int listen_fd,epoll_fd,conn_fd,nfds,flag=-1,on=1,err;
     
     //监听套接字
     listen_fd=socket(AF_INET, SOCK_STREAM, 0);
+    //set non_block
+    flag=fcntl(listen_fd,F_GETFL,0);
+    if(flag<0)
+    {
+        cout<<"fcntl F_GETFL error"<<endl;
+    }
+    if(!(flag&NON_BLOCK))
+    {
+        flag|=NON_BLOCK;
+        err=fcntl(listen_fd,F_SETFL,flag);
+        if(err<0)
+            cout<<"fcntl F_SETFL error"<<endl;
+        else
+            cout<<"sock listen_fd already set to NON_BLOCK"<<endl;
+    }
     setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &on,sizeof(on));
     bzero(&server_addr, sizeof(server_addr));
     server_addr.sin_family=AF_INET;
@@ -67,11 +82,21 @@ int main()
             }
             else
             {
-                
+                epoll_connfd.epoll_fd=epoll_fd;
+                epollfd_connfd.conn_fd=events[n].data.fd;
+                ev.data.fd=conn_fd;
+                epoll_ctl(epoll_fd,EPOLL_CTL_DEL,conn_fd,&event);
+                pthread_create(&tid,&pthread_attr_detach,&thread_func,(void *)&epoll_fd);
             }
         }
     }
     
+    pthread_attr_destroy(&pthread_attr_detach);
     close(listen_fd); //关闭监听套接字
     return 0;
+}
+
+void * thread_func(void *arg)
+{
+    
 }
