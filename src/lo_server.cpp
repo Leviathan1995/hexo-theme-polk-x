@@ -28,8 +28,6 @@ void lo::after_uv_close(uv_handle_t* handle) {
 }
 
 void lo::after_uv_write(uv_write_t* w, int status) {
-        if(w->data)
-            delete w->data;
         uv_close((uv_handle_t*)w->handle, after_uv_close); // close client
         delete w;
 
