@@ -27,12 +27,27 @@ void lo::after_uv_close(uv_handle_t* handle) {
         delete handle; // uv_tcp_t* client, see tinyweb_on_connection()
 }
 
+void lo::on_uv_alloc(uv_handle_t * handle,size_t suggested_size,uv_buf_t *buf)
+{
+        char *base=new char[suggested_size];
+        *buf=uv_buf_init(base,suggested_size);
+}
+
 void lo::after_uv_write(uv_write_t* w, int status) {
         uv_close((uv_handle_t*)w->handle, after_uv_close); // close client
         delete w;
 
 }
 
+void lo::on_uv_read(uv_stream *client,ssize_t nread,const uv_buf_t *buf)
+{
+        if(nread>0)
+        {
+            write_uv_data(client,client->data,-1,0);
+        }
+        if(buf->base)
+            delete buf;
+}
 
 void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data) {
         uv_buf_t buf;
@@ -53,7 +68,8 @@ void lo::tinyweb_on_connection(uv_stream_t* server, int status) {
         uv_tcp_t* client = new uv_tcp_t;
         uv_tcp_init(_loop, client);
         uv_accept((uv_stream_t*)&_server, (uv_stream_t*)client);
-        write_uv_data((uv_stream_t*)client, http_respone, -1, 0);
+        uv_read_start((uv_stream_t *)client,on_uv_alloc,on_uv_read);
+       //write_uv_data((uv_stream_t*)client, http_respone, -1, 0);
        //close client after uv_write, and free it in after_uv_close()
         }
 
