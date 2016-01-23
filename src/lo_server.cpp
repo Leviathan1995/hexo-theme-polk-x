@@ -8,7 +8,7 @@ using namespace std;
 uv_tcp_t _server;
 uv_tcp_t _client;
 uv_loop_t * _loop;
-const char* http_respone = "HTTP/1.1 200 OK\r\n"
+const char* http_response = "HTTP/1.1 200 OK\r\n"
     "Content-Type:text/html;charset=utf-8\r\n"
         "Content-Length:18\r\n"
             "\r\n"
@@ -21,6 +21,11 @@ void lo::tinyweb_start(uv_loop_t* loop, const char* ip, int port) {
         uv_tcp_init(_loop, &_server);
         uv_tcp_bind(&_server, (const struct sockaddr*) &addr, 0);
         uv_listen((uv_stream_t*)&_server, 8, tinyweb_on_connection);
+}
+
+void lo::tinyweb_close_client(uv_stream_t * client)
+{
+	uv_close((uv_handle_t *)client,after_uv_close);
 }
 
 void lo::after_uv_close(uv_handle_t* handle) {
@@ -39,12 +44,17 @@ void lo::after_uv_write(uv_write_t* w, int status) {
 
 }
 
-void lo::on_uv_read(uv_stream *client,ssize_t nread,const uv_buf_t *buf)
+void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 {
+	char * newdata=(char *)client->data;
         if(nread>0)
         {
-            write_uv_data(client,client->data,-1,0);
+            write_uv_data(client,http_response,-1,0);
         }
+	else if(nread==-1)
+	{
+		tinyweb_close_client(client);
+	}
         if(buf->base)
             delete buf;
 }
