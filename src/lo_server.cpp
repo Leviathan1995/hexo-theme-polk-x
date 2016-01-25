@@ -10,9 +10,9 @@ uv_tcp_t _client;
 uv_loop_t * _loop;
 const char* http_response = "HTTP/1.1 200 OK\r\n"
     "Content-Type:text/html;charset=utf-8\r\n"
-        "Content-Length:18\r\n"
+        "Content-Length:23\r\n"
             "\r\n"
-                "Welcome to tinyweb";
+               "<h3>Link to files:</h3>";
 
 void lo::tinyweb_start(uv_loop_t* loop, const char* ip, int port) {
         sockaddr_in addr;
@@ -47,7 +47,8 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 	char * newdata=(char *)client->data;
         if(nread>0)
         {
-            write_uv_data(client,http_response,-1,0);
+	    if(buf->base[0]=='G'&&buf->base[1]=='E'&&buf->base[2]=='T')
+            	write_uv_data(client,http_response,-1,0);
         }
 	else if(nread==-1)
 	{
