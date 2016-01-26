@@ -58,6 +58,37 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 
 const char * lo::get_response(const char *request)
 {
+	string method;
+	int index=0;
+	string req_uri;
+	//method
+	if(request[index]=='G'&&request[index+1]=='E'&&request[index+2]=='T') //GET method
+	{
+	    index+=3;
+	    method="GET";
+	}
+	else if(request[index]=='P'&&request[index]=='O'&&request[index]=='S'&&request[index]=='T') //post method
+	{   
+	    method="POST";   
+	    index+=4;
+	}
+	index++; //space 
+	//uri
+	while(request[index]!=' ')
+	{
+	    req_uri+=request[index];
+	    index++;
+	}
+	index++; //space
+	//version
+
+	/*
+	    analyze requests
+	*/
+	if(method=="GET")
+	{
+		
+	}
 }
 
 void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data) {
