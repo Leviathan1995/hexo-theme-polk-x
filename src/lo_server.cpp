@@ -1,18 +1,24 @@
 #include <iostream>
+#include <fstream>
 #include <uv.h>
 #include <assert.h>
 #include <string.h>
 #include "lo_server.h"
 using namespace std;
 
+
+const char * http_request;
+const char * http_response;
 uv_tcp_t _server;
 uv_tcp_t _client;
 uv_loop_t * _loop;
+/*
 const char* http_response = "HTTP/1.1 200 OK\r\n"
     "Content-Type:text/html;charset=utf-8\r\n"
         "Content-Length:23\r\n"
             "\r\n"
                "<h3>Link to files:</h3>";
+*/
 
 void lo::tinyweb_start(uv_loop_t* loop, const char* ip, int port) {
         sockaddr_in addr;
@@ -47,8 +53,9 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 	http_request=buf->base;
         if(nread>0)
         {
-		http_response=get_response(request);
-            	write_uv_data(client,http_response,-1,0);
+		http_response=get_response(http_request);
+	    	write_uv_data(client,http_response,-1,0);
+	
         }
 	else if(nread==-1)
 	{
@@ -87,8 +94,16 @@ const char * lo::get_response(const char *request)
 	*/
 	if(method=="GET")
 	{
-		
+	    fstream file;
+	    file.open("../test"+req_uri,ios::end);
+	    int file_size=file.tellg();
+	    http_response= "HTTP/1.1 200 OK\r\n"
+    			"Content-Type:text/html;charset=utf-8\r\n"
+        		"Content-Length:19\r\n"
+            		"\r\n"
+               		"<h3>I love you</h3>";
 	}
+	return http_response;
 }
 
 void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data) {
