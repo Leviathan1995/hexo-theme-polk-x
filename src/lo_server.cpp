@@ -2,7 +2,7 @@
 #include <fstream>
 #include <uv.h>
 #include <assert.h>
-#include <string.h>
+#include <cstring>
 #include "lo_server.h"
 using namespace std;
 
@@ -55,7 +55,6 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
         {
 		http_response=get_response(http_request);
 	    	write_uv_data(client,http_response,-1,0);
-	
         }
 	else if(nread==-1)
 	{
@@ -65,7 +64,8 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 
 const char * lo::get_response(const char *request)
 {
-	string method;
+	string method,str_response="",opline,line;
+	const char * path;
 	int index=0;
 	string req_uri;
 	//method
@@ -95,13 +95,24 @@ const char * lo::get_response(const char *request)
 	if(method=="GET")
 	{
 	    fstream file;
-	    file.open("../test"+req_uri,ios::end);
-	    int file_size=file.tellg();
-	    http_response= "HTTP/1.1 200 OK\r\n"
-    			"Content-Type:text/html;charset=utf-8\r\n"
-        		"Content-Length:19\r\n"
-            		"\r\n"
-               		"<h3>I love you</h3>";
+	    path=("../test"+req_uri).c_str();
+	    file.open(path);
+	    if(!file)
+	    {
+		str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:1\r\n"+"\r\n"+"2";
+            	http_response=str_response.c_str();
+	    }
+	    else
+            {
+		//read request page
+		ifstream file;
+		file.open(path);
+		while(getline(file,opline))
+			line+=opline;
+		file.close();
+	    	str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:91\r\n"+"\r\n"+line;
+	    	http_response=str_response.c_str();
+  	    }
 	}
 	return http_response;
 }
@@ -109,7 +120,7 @@ const char * lo::get_response(const char *request)
 void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data) {
         uv_buf_t buf;
         uv_write_t* w=new uv_write_t;
-        char* newdata  =strdup(data);
+        char* newdata =strdup(data);
         if(data == NULL || len == 0) return;
         if(len ==(unsigned int)-1)
             len = strlen(data);
