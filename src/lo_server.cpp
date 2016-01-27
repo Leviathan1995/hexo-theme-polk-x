@@ -99,7 +99,13 @@ const char * lo::get_response(const char *request)
 	    file.open(path);
 	    if(!file)
 	    {
-		str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:1\r\n"+"\r\n"+"2";
+		path="../test/page404.html";
+		ifstream file;
+		file.open(path);
+		while(getline(file,opline))
+			line+=opline;
+		file.close();
+		str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:"+to_string(line.length())+"\r\n"+"\r\n"+line;
             	http_response=str_response.c_str();
 	    }
 	    else
@@ -110,7 +116,7 @@ const char * lo::get_response(const char *request)
 		while(getline(file,opline))
 			line+=opline;
 		file.close();
-	    	str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:91\r\n"+"\r\n"+line;
+	    	str_response =str_response+ "HTTP/1.1 200 OK\r\n"+"Content-Type:text/html;charset=utf-8\r\n"+"Content-Length:"+to_string(line.length())+"\r\n"+"\r\n"+line;
 	    	http_response=str_response.c_str();
   	    }
 	}
