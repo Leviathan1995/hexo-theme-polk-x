@@ -1,0 +1,183 @@
+
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="description" content="OKRtool是唯一一个完全以OKR理念为基础构建的中小企业和个人目标管理工具，提供一整套OKR实施解决方案，帮助你高效地管理和实现目标" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+        <link type="text/css" href="/theme/css/css.css" rel="stylesheet" />	
+        <link type="text/css" href="/myjs/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="/myjs/font-awesome-4.0.3/css/font-awesome.min.css">
+
+        <script type="text/javascript" src="/myjs/jquery-2.0.2.min.js"></script>
+        <script type="text/javascript" src="/myjs/bootstrap/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/myjs/i18n/jquery.i18n.properties-1.0.9.js"></script>
+        <script type="text/javascript" src="/myjs/jquery.cookie.js"></script>
+        <script type="text/javascript" src="/myjs/i18n.js"></script>
+        <script type="text/javascript" src="/myjs/global.js"></script>
+
+        <title>OKR tool</title>
+    </head>
+    
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button data-target=".navbar-collapse" data-toggle="collapse" class="navbar-toggle" type="button">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" id="logo" href="/">
+                        <img src="/theme/image/logo.svg" style="height:26px;"/>
+                        <!--
+                        <span class="label label-info" style="
+    padding: 0 2px;
+    font-size: 16px;
+    background-color: gray;
+    margin-right: 1px;
+    border-radius: 3px;
+">OKR</span><span style="
+    font-size: 12px;
+    font-weight: bold;
+    line-height:1;
+">Tool</span>
+                        -->
+                    </a>
+                </div>
+				
+                <div class="navbar-collapse collapse">
+                    
+                				
+                    		
+                                    
+                </div>
+                
+            </div>
+        </div>
+		
+		        
+        <div class="container">
+            <link type="text/css" href="/theme/css/featurette.css" rel="stylesheet" />
+<link type="text/css" href="/myjs/switch/css/bootstrap3/bootstrap-switch.css" rel="stylesheet" />
+<script type="text/javascript" src="/myjs/switch/js/bootstrap-switch.js"></script>
+
+<div class="row">
+    <div class="col-lg-4 col-lg-offset-4">
+                    <h1 style="text-align: center;"><img src="/theme/image/logo.svg" style="height:70px;" alt="OKR tool"/></h1>
+        <div class="panel panel-primary">
+            <div class="panel-heading">请登录</div>
+            <div class="panel-body">
+                <form method="post" name="login_form" class="form-horizontal">
+                    <div class="form-group">
+                        <label for="user" class="col-sm-3 control-label">电子邮箱</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="user" placeholder="电子邮箱" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="passwd" class="col-sm-3 control-label">密码</label>
+                        <div class="col-sm-9">
+                            <input type="password" name="passwd" placeholder="密码" class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-offset-3 col-sm-9">
+                            <input type="submit" value="登录" class="btn btn-info"/>
+                            <input type="checkbox" name="remeber" checked data-on-text="记住我" data-off-text="忘记我">
+                            <a href="#register_box" class="btn btn-danger" data-toggle="modal">注册</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<hr class="featurette-divider">
+<div class="footer">
+    <p style="display: none;">
+        <a href="http://www.douban.com/group/513567/" target="_blank" title="豆瓣小组"><img src="/theme/image/douban.png"/></a>
+    </p>
+    <p>© 2013-2014 OKRtool</p>
+</div>
+
+<div class="modal fade" id="register_box" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">新用户注册</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" onsubmit="$('#register_btn').click();return false;">
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label" for="inputEmail">常用邮箱</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" type="text" name="user" id="inputEmail" placeholder="Email">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label" for="inputRealname">真实姓名</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" type="text" name="realname" id="inputRealname" placeholder="真实姓名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label" for="inputPassword">密码</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" type="password" name="passwd" id="inputPassword" placeholder="密码">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-4 control-label" for="inputRePassword">确认密码</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" type="password" name="repasswd" id="inputRePassword" placeholder="确认密码">
+                        </div>
+                    </div>
+                </form>
+                <div id="error_msg" style="display:none; margin-bottom: 0;" class="alert alert-danger"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="register_btn" class="btn btn-primary">立即注册</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function(){
+    $('#register_btn').click(function(){
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.post('/user/register', $('#register_box form').serialize(), function(data){
+            if(data=='succ'){
+                var back_url = $.cookie('back_url');
+                if(typeof back_url == 'undefined'){
+                    location.href = '/';
+                }else{
+                    location.href = back_url;
+                }
+            }else{
+                $('#error_msg').html(data).show();
+                btn.prop('disabled', false);
+            }
+        });
+    });
+        
+    $("[name='remeber']").bootstrapSwitch({
+        'onColor':'success',
+        'offColor':'danger'
+    });
+        
+});
+</script>
+        </div>
+        
+                
+                
+    </body>
+</html>
+
