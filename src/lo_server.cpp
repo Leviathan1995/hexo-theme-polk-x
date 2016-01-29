@@ -25,19 +25,15 @@ string str_status[]=
 
 req_content req_pass;
 
+//lo class static member
 const char * lo::http_request="";
 const char * lo::http_response="";
 string lo::file_priv="../test";
+
+
 uv_tcp_t _server;
 uv_tcp_t _client;
 uv_loop_t * _loop;
-/*
-const char* http_response = "HTTP/1.1 200 OK\r\n"
-    "Content-Type:text/html;charset=utf-8\r\n"
-        "Content-Length:23\r\n"
-            "\r\n"
-               "<h3>Link to files:</h3>";
-*/
 
 void lo::lo_start(uv_loop_t* loop, const char* ip, int port) {
         sockaddr_in addr;
