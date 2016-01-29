@@ -85,9 +85,69 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 	}
 }
 
+const char * lo::response_404(req_content & req_pass)
+{
+	string line="",opline="",path;
+	if(req_pass.type==HTML) //text
+	{
+	    ifstream in_file;
+	    path=file_priv+"/page404.html";
+	    in_file.open(path);
+	    while(getline(in_file,opline))
+		line+=opline;
+	    in_file.close();
+	    req_pass.length=line.length();
+	}
+	else //image
+	{
+		
+	}
+	return make_response(req_pass,line);
+}
+
+
+const char * lo::response_content(req_content req_pass)
+{
+	string line="",opline="",path;
+	if(req_pass.type==HTML) //text
+	{
+	    ifstream in_file;
+	    path=file_priv+req_pass.req_uri;
+ 	    in_file.open(path);
+	    while(getline(in_file,opline))
+		line+=opline;
+	    in_file.close();
+	    req_pass.length=line.length();
+	}
+	else //other file eg:image
+	{
+	    line=get_filebin(req_pass);	
+	}
+	return make_response(req_pass,line);
+}
+
+const char * lo::get_filebin(req_content req_pass)
+{
+	int length;
+	string path,line;
+	fstream file;
+	path=file_priv+req_pass.req_uri;
+	file.open(path,ios::binary|ios::in);
+	if(!file)
+	    return response_404(req_pass);
+	else
+	{
+	    length=file.tellg();
+	    cout<<length<<endl;
+	    file.read((char *)(&line),length);
+	    cout<<line<<endl;
+	    return line.c_str();
+	}
+	
+}
 const char * lo::get_response(const char *request)
 {
-	string path,line,opline;
+	string path;
 	int file_pos;
 	analyze_request(req_pass,request);
 	if(req_pass.method=="GET")
@@ -102,23 +162,19 @@ const char * lo::get_response(const char *request)
 	    {
 	        //404 not find
 	        req_pass.status=_404;
+		return response_404(req_pass);
 	    }
 	    else
    	    {
 	        //read request page
 	        req_pass.status=_200;
-	        ifstream in_file;
-	        in_file.open(path);
-	        while(getline(in_file,opline))
-		    line+=opline;
-	        in_file.close();
-	    	req_pass.length=line.length();
+		return response_content(req_pass);
 	    }
-	    return make_response(req_pass,line);
 	    file.close(); 
 	}
 	else
 	{
+		
 	}
 }
 

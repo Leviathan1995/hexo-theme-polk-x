@@ -38,7 +38,7 @@ public:
 class lo
 {
 public:
-    //function
+    //function member
     void lo_start(uv_loop_t* loop, const char* ip, int port);
     static void on_uv_alloc(uv_handle_t *handle,size_t suggested_size,uv_buf_t * buf);
     static void on_uv_read(uv_stream_t * client,ssize_t nread,const uv_buf_t *buf);
@@ -51,6 +51,10 @@ public:
     static void analyze_request(req_content & req_pass,const char * request);
     static content_type  enum_convert(std::string type);
     static void lo_on_connection(uv_stream_t* server, int status);
+    static const char * response_404(req_content & req_pass);
+    static const char * response_content(req_content req_pass);
+    static const char * get_filebin(req_content req_pass);
+    //data member
     static const char * http_request;
     static const char * http_response;
     static std::string file_priv;
