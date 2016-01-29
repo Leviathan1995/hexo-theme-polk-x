@@ -126,7 +126,7 @@ const char * lo::response_content(req_content req_pass)
 	return make_response(req_pass,line);
 }
 
-const char * lo::get_filebin(req_content req_pass)
+const string  lo::get_filebin(req_content req_pass)
 {
 	int length;
 	string path,line;
@@ -140,8 +140,7 @@ const char * lo::get_filebin(req_content req_pass)
 	    length=file.tellg();
 	    cout<<length<<endl;
 	    file.read((char *)(&line),length);
-	    cout<<line<<endl;
-	    return line.c_str();
+	    return line;
 	}
 	
 }
