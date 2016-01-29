@@ -181,7 +181,6 @@ const char * lo::make_response(req_content req_pass,string content)
 {
 	string response="";
 	response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"\r\n"+content;
-	cout<<response<<endl;
 	return response.c_str();
 }
 
