@@ -54,6 +54,8 @@ content_type lo::enum_convert(string type)
 {
     	if(type=="html")
 	    return HTML;
+	if(type=="png")
+	    return PNG;
 }
 void lo::after_uv_close(uv_handle_t* handle) {
         delete handle; // uv_tcp_t* client, see tinyweb_on_connection()
@@ -74,8 +76,8 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 	http_request=buf->base;
         if(nread>0)
         {
-		string str=http_request;
-		cout<<str<<endl;
+		string str_request=http_request;
+		cout<<str_request<<endl;  //print request
 		http_response=get_response(http_request);
 	    	write_uv_data(client,http_response,-1,0);
         }
@@ -137,10 +139,7 @@ const string  lo::get_filebin(req_content req_pass)
 	    return response_404(req_pass);
 	else
 	{
-	    length=file.tellg();
-	    cout<<length<<endl;
-	    file.read((char *)(&line),length);
-	    return line;
+	    
 	}
 	
 }
