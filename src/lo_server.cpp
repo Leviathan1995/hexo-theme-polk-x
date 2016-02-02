@@ -110,6 +110,7 @@ const char * lo::response_404(req_content & req_pass)
 
 const char * lo::response_content(req_content req_pass)
 {
+	char *data;
 	string line="",opline="",path;
 	if(req_pass.type==HTML) //text
 	{
@@ -120,26 +121,32 @@ const char * lo::response_content(req_content req_pass)
 		line+=opline;
 	    in_file.close();
 	    req_pass.length=line.length();
+	    return make_response(req_pass,line);
 	}
 	else //other file eg:image
 	{
-	    line=get_filebin(req_pass);	
+	    return get_filebin(req_pass);
 	}
-	return make_response(req_pass,line);
 }
 
-const string  lo::get_filebin(req_content req_pass)
+const char*  lo::get_filebin(req_content &req_pass)
 {
+	string path;
 	int length;
-	string path,line;
-	fstream file;
+	char *data;
+	ifstream file;
 	path=file_priv+req_pass.req_uri;
-	file.open(path,ios::binary|ios::in);
-	if(!file)
-	    return response_404(req_pass);
-	else
+	file.open(path,ios::binary|ios::app);
+	if(file)
 	{
-	    
+	    file.seekg(0,ios::end);
+	    length=file.tellg();
+	    cout<<length<<"oooooooooooo"<<endl;
+	    req_pass.length=length;
+	    data=new char[length];
+	    file.seekg(0,ios::beg);
+	    file.read(data,length);
+	    return make_response(req_pass,data);
 	}
 	
 }
@@ -179,7 +186,8 @@ const char * lo::get_response(const char *request)
 const char * lo::make_response(req_content req_pass,string content)
 {
 	string response="";
-	response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"\r\n"+content;
+	response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(req_pass.length)+"\r\n"+"\r\n"+content;
+	cout<<response<<endl;
 	return response.c_str();
 }
 
