@@ -6,6 +6,8 @@
 #include "lo_server.h"
 using namespace std;
 
+
+
 string str_type[]=
 {
     "text/html",
@@ -141,12 +143,11 @@ const char*  lo::get_filebin(req_content &req_pass)
 	{
 	    file.seekg(0,ios::end);
 	    length=file.tellg();
-	    cout<<length<<"oooooooooooo"<<endl;
 	    req_pass.length=length;
 	    data=new char[length];
 	    file.seekg(0,ios::beg);
 	    file.read(data,length);
-	    return make_response(req_pass,data);
+	    return make_response(req_pass,string(data,length));
 	}
 	
 }
@@ -186,9 +187,14 @@ const char * lo::get_response(const char *request)
 const char * lo::make_response(req_content req_pass,string content)
 {
 	string response="";
-	response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(req_pass.length)+"\r\n"+"\r\n"+content;
+	if(req_pass.type==HTML)
+	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"\r\n"+content;
+	else 
+	{
+	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+"\r\n"+"Accept-Ranges:bytes\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"Connection:keep-alive\r\n"+"\r\n"+content;
+	}
 	cout<<response<<endl;
-	return response.c_str();
+	return response.data();
 }
 
 void lo::analyze_request(req_content & req_pass,const char * request)
@@ -217,8 +223,9 @@ void lo::analyze_request(req_content & req_pass,const char * request)
 }
 
 
-void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data) {
-        uv_buf_t buf;
+void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data)
+{
+	uv_buf_t buf;
         uv_write_t* w=new uv_write_t;
         char* newdata =strdup(data);
         if(data == NULL || len == 0) return;
@@ -227,7 +234,6 @@ void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, 
         buf = uv_buf_init(newdata, len);
         w->data = newdata;
         uv_write(w, stream, &buf, 1, after_uv_write); // free w and w->data in after_uv_write()
-
 }
 
 void lo::lo_on_connection(uv_stream_t* server, int status) {
