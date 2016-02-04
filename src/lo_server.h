@@ -32,7 +32,8 @@ public:
     std::string req_uri;
     status_code status;
     content_type type;
-    int length;
+    int content_length;
+    int msg_length;
 };
 
 class lo
@@ -45,9 +46,9 @@ public:
     static void after_uv_close(uv_handle_t* handle);
     static void tinyweb_close_client(uv_stream_t * client);
     static void after_uv_write(uv_write_t* w, int status);
-    static void write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data);
+    static void write_uv_data(uv_stream_t* stream, const void* data, unsigned int len, int need_copy_data);
     static const char *get_response(const char *request);
-    static const char *make_response(req_content  req_pass,std::string content);
+    static const char *make_response(req_content &req_pass,std::string content);
     static void analyze_request(req_content & req_pass,const char * request);
     static content_type  enum_convert(std::string type);
     static void lo_on_connection(uv_stream_t* server, int status);

@@ -27,6 +27,7 @@ string str_status[]=
 
 req_content req_pass;
 
+int image_length=0;
 //lo class static member
 const char * lo::http_request="";
 const char * lo::http_response="";
@@ -81,6 +82,7 @@ void lo::on_uv_read(uv_stream_t *client,ssize_t nread,const uv_buf_t *buf)
 		string str_request=http_request;
 		cout<<str_request<<endl;  //print request
 		http_response=get_response(http_request);
+		cout<<strlen(http_response)<<endl;
 	    	write_uv_data(client,http_response,-1,0);
         }
 	else if(nread==-1)
@@ -100,7 +102,7 @@ const char * lo::response_404(req_content & req_pass)
 	    while(getline(in_file,opline))
 		line+=opline;
 	    in_file.close();
-	    req_pass.length=line.length();
+	    req_pass.content_length=line.length();
 	}
 	else //image
 	{
@@ -122,7 +124,7 @@ const char * lo::response_content(req_content req_pass)
 	    while(getline(in_file,opline))
 		line+=opline;
 	    in_file.close();
-	    req_pass.length=line.length();
+	    req_pass.content_length=line.length();
 	    return make_response(req_pass,line);
 	}
 	else //other file eg:image
@@ -143,7 +145,7 @@ const char*  lo::get_filebin(req_content &req_pass)
 	{
 	    file.seekg(0,ios::end);
 	    length=file.tellg();
-	    req_pass.length=length;
+	    req_pass.content_length=length;
 	    data=new char[length];
 	    file.seekg(0,ios::beg);
 	    file.read(data,length);
@@ -184,16 +186,22 @@ const char * lo::get_response(const char *request)
 	}
 }
 
-const char * lo::make_response(req_content req_pass,string content)
+const char * lo::make_response(req_content & req_pass,string content)
 {
 	string response="";
 	if(req_pass.type==HTML)
-	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"\r\n"+content;
-	else 
 	{
-	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+"\r\n"+"Accept-Ranges:bytes\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"Connection:keep-alive\r\n"+"\r\n"+content;
+	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+";"+"charset=utf-8\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"\r\n"+content;
+	    req_pass.msg_length=response.length();
 	}
-	cout<<response<<endl;
+	else  //image ..
+	{
+	    response=response+"HTTP/1.1 "+str_status[req_pass.status]+"\r\n"+"Content-Type:"+str_type[req_pass.type]+"\r\n"+"Accept-Ranges:bytes\r\n"+"Content-Length:"+to_string(content.length())+"\r\n"+"Connection:keep-alive\r\n"+"\r\n";
+	    req_pass.msg_length=response.length()+content.length();
+	    cout<<req_pass.msg_length<<"msg length"<<endl;
+	    image_length=req_pass.msg_length;
+	    response+=content;
+	}
 	return response.data();
 }
 
@@ -223,15 +231,20 @@ void lo::analyze_request(req_content & req_pass,const char * request)
 }
 
 
-void lo::write_uv_data(uv_stream_t* stream, const char* data, unsigned int len, int need_copy_data)
+void lo::write_uv_data(uv_stream_t* stream, const void* data, unsigned int len, int need_copy_data)
 {
 	uv_buf_t buf;
         uv_write_t* w=new uv_write_t;
-        char* newdata =strdup(data);
+        void* newdata =(void *)data;
         if(data == NULL || len == 0) return;
-        if(len ==(unsigned int)-1)
-            len = strlen(data);
-        buf = uv_buf_init(newdata, len);
+	cout<<str_type[req_pass.type]<<"type"<<endl;
+	cout<<image_length<<"write msg length"<<endl;
+        if(req_pass.type==HTML)
+            len = strlen((char *)data);
+	else
+	    len=image_length;
+	cout<<len<<"msg length"<<endl;
+        buf = uv_buf_init((char *)newdata, len);
         w->data = newdata;
         uv_write(w, stream, &buf, 1, after_uv_write); // free w and w->data in after_uv_write()
 }
