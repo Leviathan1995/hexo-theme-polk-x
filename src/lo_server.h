@@ -25,7 +25,9 @@ enum status_code
 extern std::string str_type[];
 extern std::string str_status[];
 
-class req_content
+
+//
+class parse_content
 {
 public:
     std::string method;
@@ -46,18 +48,20 @@ public:
     static void after_uv_close(uv_handle_t* handle);
     static void tinyweb_close_client(uv_stream_t * client);
     static void after_uv_write(uv_write_t* w, int status);
-    static void write_uv_data(uv_stream_t* stream, const void* data, unsigned int len, int need_copy_data);
+    static void write_uv_data(uv_stream_t* stream, const void* data);
     static const char *get_response(const char *request);
-    static const char *make_response(req_content &req_pass,std::string content);
-    static void analyze_request(req_content & req_pass,const char * request);
+    static const char *make_response(std::string content);
+    static void analyze_request(const char * request);
     static content_type  enum_convert(std::string type);
     static void lo_on_connection(uv_stream_t* server, int status);
-    static const char * response_404(req_content & req_pass);
-    static const char * response_content(req_content req_pass);
-    static const char *  get_filebin(req_content &req_pass);
+    static const char * response_404();
+    static const char * response_content();
+    static const char *  get_filebin();
     //data member
+    static parse_content parse_pass;
     static const char * http_request;
     static const char * http_response;
+    static std::string merge_response;
     static std::string file_priv;
 };
 
