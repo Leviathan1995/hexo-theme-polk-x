@@ -1,10 +1,15 @@
-#include <iostream>
-#include "lo_server.h"
-using namespace std;
+//
+// Created by leviathan on 16/3/24.
+//
+
+#include "lo.h"
+
+using namespace lo;
 
 int main()
 {
-    lo lo_server;
-    lo_server.lo_start(uv_default_loop(), "127.0.0.1", 8080);
-    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+    lo_server lo;
+    lo.start();
+    return 0;
 }
+
