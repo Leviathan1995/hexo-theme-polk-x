@@ -4,10 +4,13 @@
 //
 // Created by leviathan on 16/3/24.
 //
+#include <search.h>
 #include "lo.h"
 
 namespace lo
 {
+    epoll_event epoll_events[MAX_EVENTS];
+    epoll_event ev;
     //
     //web server module
     //
@@ -25,7 +28,7 @@ namespace lo
         //init server addr
         bzero(&server_addr,sizeof(server_addr));
         server_addr.sin_family=AF_INET;
-        server_addr.sin_port=htons(80);
+        server_addr.sin_port=htons(8080);
         server_addr.sin_addr.s_addr=inet_addr("127.0.0.1");
 
         //bind socket with server_addr
@@ -34,15 +37,20 @@ namespace lo
 
         //create epoll fd
         epoll_fd=lo_epoll_create(MAX_EVENTS);
-        epoll_event ev;
-        ev.events=EPOLLIN;    //read
+        //epoll ctl
+        ev.events=EPOLLIN|EPOLLET;    //read
         ev.data.fd=listen_fd;
-
         lo_epoll_ctl(epoll_fd,EPOLL_CTL_ADD,listen_fd,&ev);
+
+        //create pthread pool
+        pool.create_pool();
+        pool.set_epoll_fd(fd);
 
         for(;;)
         {
             int nfds=lo_epoll_wait(epoll_fd,epoll_events,MAX_EVENTS,-1);
+            if(nfds==-1)
+                continue;
             for(int i=0;i!=nfds;++i)
             {
                 if ((epoll_events[i].events&EPOLLERR)||
@@ -56,23 +64,22 @@ namespace lo
                 else if(epoll_events[i].data.fd==listen_fd) //connect socket
                 {
                     connect_fd=lo_accept(listen_fd,(struct sockaddr*)&client_addr, &addrlen);
+                    std::cout<<"connect fd"<<" "<<connect_fd<<std::endl;
                     lo_set_nonblocking(connect_fd);
-                    epoll_event ev;
                     ev.data.fd=connect_fd;
-                    ev.events=EPOLLIN|EPOLLET;
+                    ev.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
                     epoll_ctl(epoll_fd,EPOLL_CTL_ADD,connect_fd,&ev);
                 }
 
                 else if(epoll_events[i].events&EPOLLIN) //data on the fd waiting to be read
                 {
-                    std::cout<<"data comming"<<std::endl;
-                    break;
+                    ev.data.fd=epoll_events[i].data.fd;
+                    std::cout<<"data comming fd"<<" "<<ev.data.fd<<std::endl;
+                    pool.add_task(ev.data.fd);
+                    lo_epoll_ctl(epoll_fd,EPOLL_CTL_DEL,epoll_events[i].data.fd,&ev);
                 }
             }
-            break;
         }
-        close(listen_fd);
-
 
     }
 
@@ -175,7 +182,7 @@ namespace lo
         epoll_event ev;
         ev.events=EPOLLIN;    //read
         ev.data.fd=listen_fd;
-        if(epoll_ctl(epoll_fd, EPOLL_CTL_ADD, listen_fd, &ev)==-1)
+        if(epoll_ctl(epoll_fd, op, listen_fd, &ev)==-1)
         {
             std::cout << error("lo_server","lo_epoll_ctl","epoll ctl failed!") << std::endl;
             exit(-1);
@@ -185,9 +192,10 @@ namespace lo
     int lo_server::lo_epoll_wait(int epoll_fd,struct epoll_event *events, int maxevents, int timeout)
     {
         int nfds=epoll_wait(epoll_fd,events,maxevents,timeout);
-        if (nfds==-1)
+        if (nfds==-1&&errno==EINVAL)
         {
-            std::cout << error("lo_server","lo_epoll_wait","epoll wait failed!") << std::endl;
+            std::cout << errno<<" "<<error("lo_server","lo_epoll_wait","epoll wait failed!") << std::endl;
+
             exit(-1);
         }
         return nfds;

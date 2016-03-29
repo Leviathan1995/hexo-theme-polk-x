@@ -17,10 +17,18 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "pthread_pool.h"
+
 namespace lo
 {
     const int MAX_EVENTS=1024  ;  // epoll listen events
     const int MAX_BACKLOG=100  ;
+    const int MAX_CONNECTS=3 ;
+    const int MAX_BUFSIZE=1024*1024  ;
+
+    extern epoll_event epoll_events[];
+    extern epoll_event ev;
+
 
 
     // web server
@@ -28,8 +36,8 @@ namespace lo
     {
     public:
         lo_server():
-                listen_fd(-1),connect_fd(-1),errorno(-1),epoll_fd(-1),pservent(new servent){};
-        ~lo_server(){};
+                listen_fd(-1),connect_fd(-1),errorno(-1),epoll_fd(-1),pservent(new servent),pool(MAX_CONNECTS){};
+        ~lo_server(){if(pservent!=NULL) delete pservent;};
 
         //start web server
         void start();
@@ -56,10 +64,10 @@ namespace lo
         sockaddr_in server_addr;
         sockaddr_in client_addr;
         socklen_t addrlen;
-        epoll_event epoll_events[MAX_EVENTS];
 
+        pthread_pool pool;  //pthread pool
 
-        //
+        // No copying allowed
         lo_server(const lo_server &);
         lo_server & operator=(const lo_server &);
 
