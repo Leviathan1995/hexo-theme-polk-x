@@ -68,39 +68,36 @@ namespace lo
 
     void pthread_pool::socket_handle(int fd)
     {
-        int n,nread;
-        char buff[MAX_BUFSIZE];
-        bzero(buff,MAX_BUFSIZE);
-        while(1)
+        int n=0,nread=0;
+        char * buff=new char[MAX_BUFFSIZE];
+        while((nread=read(fd,buff+n,MAX_BUFFSIZE-1))!=0)
         {
-            nread=read(fd,buff+n,MAX_BUFSIZE-1);
-            if(nread ==0)
-            {
-                close(fd);
-                break;
-            }
-            else if(nread<0)
-                if(errno==EAGAIN)
-                {
+            n += nread;
+            std::cout<<strlen(buff);
+            if (nread == -1) {
+                if (errno == EAGAIN) {
                     //reset epooll event
                     epoll_event event;
-                    event.data.fd=fd;
-                    event.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
-                    epoll_ctl(epoll_fd,EPOLL_CTL_MOD,fd,&event);
-
-                }
-            else
-                {
-                    char* http_respone = "HTTP/1.1 200 OK\r\n"
-                            "Content-Type:text/html;charset=utf-8\r\n"
-                            "Content-Length:18\r\n"
-                            "\r\n"
-                            "Welcome to tinyweb";
-                    write(fd,http_respone,MAX_BUFSIZE);
+                    event.data.fd = fd;
+                    event.events = EPOLLIN | EPOLLET | EPOLLONESHOT;
+                    epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &event);
                 }
             }
+            else {
+
+                char *http_respone = "HTTP/1.1 200 OK\r\n"
+                        "Content-Type:text/html;charset=utf-8\r\n"
+                        "Content-Length:18\r\n"
+                        "\r\n"
+                        "Welcome to tinyweb";
+                write(fd, http_respone, MAX_BUFFSIZE);
+            }
+        }
+        if (nread == 0)
+            close(fd);
+        delete []buff;
         return ;
     }
 
-}
+} //namespace lo
 

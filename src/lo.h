@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "http.h"
 #include "pthread_pool.h"
 
 namespace lo
@@ -24,11 +25,10 @@ namespace lo
     const int MAX_EVENTS=1024  ;  // epoll listen events
     const int MAX_BACKLOG=100  ;
     const int MAX_CONNECTS=3 ;
-    const int MAX_BUFSIZE=1024*1024  ;
+    const int MAX_BUFFSIZE=1024*1024  ;
 
     extern epoll_event epoll_events[];
     extern epoll_event ev;
-
 
 
     // web server

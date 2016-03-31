@@ -44,7 +44,7 @@ namespace lo
 
         //create pthread pool
         pool.create_pool();
-        pool.set_epoll_fd(fd);
+        pool.set_epoll_fd(epoll_fd);
 
         for(;;)
         {
@@ -64,7 +64,7 @@ namespace lo
                 else if(epoll_events[i].data.fd==listen_fd) //connect socket
                 {
                     connect_fd=lo_accept(listen_fd,(struct sockaddr*)&client_addr, &addrlen);
-                    std::cout<<"connect fd"<<" "<<connect_fd<<std::endl;
+                    std::cout<<"connect fd: "<<connect_fd<<std::endl;
                     lo_set_nonblocking(connect_fd);
                     ev.data.fd=connect_fd;
                     ev.events=EPOLLIN|EPOLLET|EPOLLONESHOT;
@@ -73,10 +73,8 @@ namespace lo
 
                 else if(epoll_events[i].events&EPOLLIN) //data on the fd waiting to be read
                 {
-                    ev.data.fd=epoll_events[i].data.fd;
-                    std::cout<<"data comming fd"<<" "<<ev.data.fd<<std::endl;
+                    std::cout<<"data comming fd: "<<ev.data.fd<<std::endl;
                     pool.add_task(ev.data.fd);
-                    lo_epoll_ctl(epoll_fd,EPOLL_CTL_DEL,epoll_events[i].data.fd,&ev);
                 }
             }
         }
