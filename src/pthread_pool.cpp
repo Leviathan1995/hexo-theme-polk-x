@@ -69,11 +69,10 @@ namespace lo
     void pthread_pool::socket_handle(int fd)
     {
         int n=0,nread=0;
-        char * buff=new char[MAX_BUFFSIZE];
-        while((nread=read(fd,buff+n,MAX_BUFFSIZE-1))!=0)
+        char * request=new char[MAX_BUFFSIZE];
+        while((nread=read(fd,request+n,MAX_BUFFSIZE-1))!=0)
         {
             n += nread;
-            std::cout<<strlen(buff);
             if (nread == -1) {
                 if (errno == EAGAIN) {
                     //reset epooll event
@@ -85,17 +84,22 @@ namespace lo
             }
             else {
 
-                char *http_respone = "HTTP/1.1 200 OK\r\n"
+                /*
+                char *http_response = "HTTP/1.1 200 OK\r\n"
                         "Content-Type:text/html;charset=utf-8\r\n"
                         "Content-Length:18\r\n"
                         "\r\n"
                         "Welcome to tinyweb";
-                write(fd, http_respone, MAX_BUFFSIZE);
+                */
+                http::parse_request(request,nread);
+                char * response=http::get_response();
+                write(fd,response, MAX_BUFFSIZE);
+                delete [] response;
             }
         }
         if (nread == 0)
             close(fd);
-        delete []buff;
+        delete [] request;
         return ;
     }
 

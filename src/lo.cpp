@@ -11,6 +11,8 @@ namespace lo
 {
     epoll_event epoll_events[MAX_EVENTS];
     epoll_event ev;
+
+    std::string root="/home/leviathan/lo_root";
     //
     //web server module
     //

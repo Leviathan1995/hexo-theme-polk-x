@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <sys/epoll.h>
 
+#include "http.h"
+
 namespace  lo
 {
     //pthread pool module

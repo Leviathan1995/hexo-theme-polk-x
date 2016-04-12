@@ -3,7 +3,6 @@
 //
 
 #include "lo.h"
-
 using namespace lo;
 
 int main()

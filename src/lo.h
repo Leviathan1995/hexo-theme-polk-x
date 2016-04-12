@@ -29,7 +29,7 @@ namespace lo
 
     extern epoll_event epoll_events[];
     extern epoll_event ev;
-
+    extern std::string root;
 
     // web server
     class lo_server
