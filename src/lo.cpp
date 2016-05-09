@@ -1,9 +1,7 @@
 //
 // Created by leviathan on 3/24/16.
 //
-//
-// Created by leviathan on 16/3/24.
-//
+
 #include <search.h>
 #include "lo.h"
 
