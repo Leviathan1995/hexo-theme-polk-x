@@ -9,12 +9,12 @@ namespace lo
     //http class static variable
     http_request http::request;
     http_response http::response;
-
+    
     //parse request
     void  http::parse_request(const char * buff,int num)
     {
         int index = 0;
-
+        
         //method
         if (buff[index] == 'G' && buff[index + 1] == 'E' && buff[index + 2] == 'T')    //GET
         {
@@ -34,7 +34,7 @@ namespace lo
         //space
         if (buff[index] == ' ')
             index++;
-
+        
         //url
         char *url = new char[256];
         int url_index = 0;
@@ -44,11 +44,11 @@ namespace lo
             index++;
         }
         request.url = url;
-
+        
         //space
         if (buff[index] == ' ')
             index++;
-
+        
         //version
         while (buff[index] != ' ') {
             if (buff[index] == '/') {
@@ -62,21 +62,21 @@ namespace lo
             else
                 index++;
         }
-
+        
         // \r\n
         if (buff[index] == '\r' && buff[index + 1] == '\n')
             index += 2;
-
+        
         while(buff[index]=='\r'&&buff[index+1]=='\n'&&buff[index+2]=='\r'&&buff[index+3]=='\n') // \r\n\r\n
         {
             if(buff[index]=='H'&&buff[index+1]=='o'&&buff[index+2]=='s'&&buff[index+3]=='t')    //host
                 index+=4;
             else if(buff[index]=='C'&&buff[index+1]=='o'&&buff[index+2]=='n'&&buff[index+3]=='n'&&buff[index+4]=='e'&&buff[index+5]=='c'&&buff[index+6]=='t'&&buff[index+6]=='i'&&buff[index+7]=='o'&&buff[index+8]=='t')   //connection
                 index+=9;
-
+            
         }
     }
-
+    
     //get response
     char * http::get_response()
     {
@@ -88,14 +88,14 @@ namespace lo
         if(request.method==HTTP_GET)
         {
             std::string str_file(request.url);
-
+            
             //check file type
             int file_pos;
             std::string str_url(request.url);
             file_pos=str_url.rfind(".",str_url.length());
             std::string str_url_suffix=str_url.substr(++file_pos);
             response.type=str_url_suffix;
-
+            
             //read file
             std::fstream file;
             file.open(root+str_file,std::ios::binary|std::ios::in);
@@ -119,13 +119,13 @@ namespace lo
                 file.seekg(0, std::ios::beg);
                 file.read(content, content_length);
             }
-
+            
             //
             //make response
             //
-
+            
             //status line
-
+            
             //version
             if(response.version==0x0011)
                 strcat(buff,"HTTP/1.1");
@@ -135,13 +135,13 @@ namespace lo
                 strcat(buff,"200 OK");
             else if(response.status==404) //404
                 strcat(buff,"404 NOT FOUND");
-
+            
             strcat(buff,"\r\n");
-
+            
             //
             //response header
             //
-
+            
             //MIME TYPE "text"
             if(response.type=="html")
                 strcat(buff,"Content-Type:text/html;");
@@ -160,33 +160,33 @@ namespace lo
                 strcat(buff,"Content-Type:image/png");
             else if(response.type=="jpeg")
                 strcat(buff,"Content-Type:image/jpeg");
-
-
-
+            
+            
+            
             if(response.charset=="utf-8")
                 strcat(buff,"charset=utf-8");
             strcat(buff,"\r\n");
-
+            
             //content length
             std::string str_length=std::to_string(content_length);
             char * length=new char[str_length.length()];
             int length_index=0;
             for(auto s:str_length)
                 length[length_index++]=s;
-
+            
             strcat(buff,"Content-Length:");
             strcat(buff,length);
             strcat(buff,"\r\n");
             strcat(buff,"\r\n");
-
+            
             //content
             strcat(buff,content);
-
+            
             //detele
             delete [] length;
             delete [] content;
-            return buff;
         }
+        return buff;
     }
-
-}
+    
+}//namespace
