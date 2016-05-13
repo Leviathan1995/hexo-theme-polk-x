@@ -1,10 +1,12 @@
 #Lo
 
-A tiny http server based on libuv.
+A tiny http server based on event loop and pthread pool
+
+###Basic:
+基于事件驱动和线程池的并发web服务器，使用HTTP1.1协议，支持GET,POST方法。
 
 ###Building and Running:
 
-* 安装libuv：参照[libuv官方文档](https://github.com/libuv/libuv)
 * 打开终端
 
         $ git clone https://github.com/Leviathan1995/Lo.git
