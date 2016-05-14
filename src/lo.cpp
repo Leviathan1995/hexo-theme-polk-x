@@ -10,6 +10,9 @@ namespace lo
     //
     //global variable
     //
+    
+    pthread_mutex_t flage_mutex=PTHREAD_MUTEX_INITIALIZER;
+
     int MAX_EVENTS=1024;  // epoll listen events
     int MAX_BACKLOG=100;
     int MAX_CONNECTS=1;
@@ -74,7 +77,7 @@ namespace lo
 
         EV_SET(&monitor_event[0], listen_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0); //initalise kevent structure
         flags[0]=1;
-        id_fd[0]=0;
+        id_fd[0]=listen_fd;
         
         pool.create_pool();//create pthread pool
         pool.set_kq_fd(kq_fd);
@@ -112,8 +115,11 @@ namespace lo
                     pool.add_task(ev.data.fd);
                 }
             }
-             */
+            */
+            int max=find_max();
+            pthread_mutex_lock(&flage_mutex);
             nev=kevent(kq_fd, monitor_event, find_max(), triggered_event, 9999, NULL);
+            pthread_mutex_unlock(&flage_mutex);
             
             if (nev<0)
             {
@@ -126,24 +132,34 @@ namespace lo
                 {
                     if (triggered_event[i].flags & EV_ERROR)    //error
                     {
-                        std::cout << error("lo_server","kevent","kqueue error") << std::endl;
-                        exit(-1);
+                        
+                        std::cout <<error("lo_server","kevent","kqueue error") << std::endl;
+                        break;
+                        //exit(-1);
                     }
-                    if (triggered_event[i].ident==listen_fd)    //connect comming
+                    else if (triggered_event[i].ident==listen_fd)    //connect comming
                     {
                         connect_fd=lo_accept(listen_fd,(struct sockaddr*)&client_addr, &addrlen);
                         std::cout<<"connect fd: "<<connect_fd<<std::endl;
                         lo_set_nonblocking(connect_fd);
+                        //
+                        pthread_mutex_lock(&flage_mutex);
                         EV_SET(&monitor_event[find_free()], connect_fd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, 0);
                         id_fd[find_free()]=connect_fd;
                         flags[find_free()]=1;
+                        pthread_mutex_unlock(&flage_mutex);
+
                     }
                     else if(triggered_event[i].flags & EVFILT_READ)    //data comming
                     {
                         std::cout<<"data comming fd: "<<triggered_event[i].ident<<std::endl;
                         pool.add_task(int(triggered_event[i].ident));
+                        
+                        pthread_mutex_lock(&flage_mutex);
                         flags[id_fd.find(int(triggered_event[i].ident))->first]=0;
                         id_fd.erase(id_fd.find(int(triggered_event[i].ident))->first);
+                        pthread_mutex_unlock(&flage_mutex);
+
                     }
                 }
             }

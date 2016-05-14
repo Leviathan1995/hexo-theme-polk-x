@@ -76,9 +76,15 @@ namespace lo
             {
                 if (errno == EAGAIN)
                 {
+                    /*
+                    pthread_mutex_lock(&flage_mutex);
                     EV_SET(&monitor_event[data_fd], data_fd, EVFILT_READ, EV_ADD|EV_ENABLE|EV_ONESHOT, 0, 0, 0);
+                    std::cout<<data_fd<<" read eagain"<<std::endl;
                     id_fd[find_free()]=data_fd;
                     flags[find_free()]=1;
+                    pthread_mutex_unlock(&flage_mutex);
+                    */
+                    break;
                 }
             }
             else
@@ -100,9 +106,15 @@ namespace lo
         if (nread == 0)
         {
             close(data_fd);
+            /*
+            pthread_mutex_lock(&flage_mutex);
             EV_SET(&monitor_event[data_fd], data_fd, EVFILT_READ, EV_DELETE, 0, 0, 0);
+            std::cout<<data_fd<<" "<<" close fd"<<std::endl;
             flags[id_fd.find(data_fd)->first]=0;
             id_fd.erase(id_fd.find(data_fd)->first);
+            pthread_mutex_unlock(&flage_mutex);
+            */
+            
         }
         delete [] request;
         return ;

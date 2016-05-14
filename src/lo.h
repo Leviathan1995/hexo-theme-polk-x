@@ -26,8 +26,8 @@ namespace lo
     //
     //global variable
     //
-    #define MAX_FDS 9999;
-    
+    extern pthread_mutex_t flage_mutex;
+
     extern int MAX_EVENTS;  // epoll listen events
     extern int MAX_BACKLOG;
     extern int MAX_CONNECTS;
