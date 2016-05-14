@@ -3,7 +3,7 @@
 A tiny http server based on event loop and pthread pool
 
 ###Basic:
-基于事件驱动和线程池的并发web服务器，使用HTTP1.1协议，支持GET,POST方法。
+基于事件驱动Kqueue和线程池的并发web服务器，使用HTTP1.1协议，支持GET,POST方法。
 
 ###Building and Running:
 
