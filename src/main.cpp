@@ -3,12 +3,13 @@
 //
 
 #include "lo.h"
+
 using namespace lo;
 
 int main()
 {
-    lo_server lo;
-    lo.start();
+    LoServer lo;
+    lo.Start();
     return 0;
 }
 
