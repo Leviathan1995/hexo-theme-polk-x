@@ -1,5 +1,5 @@
 //
-// Created by leviathan on 3/26/16.
+// Created by leviathan on 16/3/24.
 //
 
 #ifndef LO_THREAD_POOL_H
@@ -17,31 +17,29 @@
 namespace  lo
 {
     //pthread pool module
-    class pthread_pool
+    class ThreadPool
     {
     public:
-        pthread_pool(){};
-        pthread_pool(int num);
-        ~pthread_pool(){};
+        ThreadPool(){};
+        ThreadPool(int num);
+        ~ThreadPool(){};
         
-        void create_pool();
-        void add_task(int fd);
-        void set_pthread_num(int num);
-        static void set_kq_fd(int fd);
-        static void *pthread_call(void *data);
+        void CreatePool();
+        void AddTask(int fd);
+        void SetThreadNum(int num);
+        static void SetIoEventFd(int fd);
+        static void *ThreadCall(void *data);
         
-        static void socket_handle(int fd);
-        int stop();
-        
+        static void HandleSocket(int fd);
+
     private:
-        static int epoll_fd;
-        static bool shutdown;
-        static pthread_mutex_t pthread_mutex;
-        static pthread_cond_t pthread_cond;
-        int pthread_num;
-        pthread_t * pthread_id;
-        static std::queue<int > task_list;  //socket fd list
-        
+        static int io_event_fd_;
+        static bool shutdown_;
+        static pthread_mutex_t thread_mutex_;
+        static pthread_cond_t thread_cond_;
+        int thread_num_;
+        pthread_t * thread_id_;
+        static std::queue<int > task_list_;
     };
     
 }

@@ -16,12 +16,7 @@ namespace lo
         "TRACE"
     };
     
-    void Logger::PrintLog(int level, const char* file, int line, const char* func, const char * pram, ...)
-    {
-        if (level>level_)
-        {
-            return;
-        }
+    void Log::PrintLog(int level, const char* file, int line, const char* func, const char * pram, ...){
         
         struct timeval now_tv;
         gettimeofday(&now_tv,NULL); //得到当前时间

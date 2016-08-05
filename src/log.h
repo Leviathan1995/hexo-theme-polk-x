@@ -32,7 +32,7 @@ namespace lo
     
     
 #define printlog(level,...) \
-    Logger::Instance().PrintLog(level, __FILE__, __LINE__, __func__, __VA_ARGS__);
+    Log::Instance().PrintLog(level, __FILE__, __LINE__, __func__, __VA_ARGS__);
     
     
 #define TRACE(...) printlog(LTRACE, __VA_ARGS__)

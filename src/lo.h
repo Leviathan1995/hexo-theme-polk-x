@@ -20,6 +20,7 @@
 
 #include "http.h"
 #include "pthread_pool.h"
+#include "log.h"
 
 namespace lo
 {
@@ -46,31 +47,33 @@ namespace lo
     int find_max();
     
     //
-    // web server module
+    // http server
     //
-    class lo_server
+    class LoServer
     {
     public:
-        lo_server():
+        LoServer():
         listen_fd(-1),connect_fd(-1),errorno(-1),kq_fd(-1),pool(MAX_CONNECTS){};
-        ~lo_server(){};
+        ~LoServer(){};
         
         //start web server
-        void start();
+        void Start();
         //init web server
-        void init();
+        void Init();
+        void Work();
         
         //
         //system  function
         //
-        int lo_socket(int family,int type,int protocol);
-        void lo_listen(int socket_fd,int backlog);
-        void lo_bind(int socket_fd,const struct sockaddr * addr,socklen_t addrlen);
-        void lo_set_nonblocking(int socket_fd);
-        void lo_set_reuseaddr(int socket_fd);
-        int lo_accept(int socket_fd,struct sockaddr * addr, socklen_t * addrlen);
+        int Socket(int family,int type,int protocol);
+        void Listen(int socket_fd,int backlog);
+        void Bind(int socket_fd,const struct sockaddr * addr,socklen_t addrlen);
+        void SetNonblocking(int socket_fd);
+        void SetReuseaddr(int socket_fd);
+        int Accept(int socket_fd,struct sockaddr * addr, socklen_t * addrlen);
+
         //kqueue
-        int lo_kqueue_create();
+        int KqueueCreate();
         
         /*
         void lo_epoll_ctl(int epoll_fd,int op,int listen_fd,epoll_event * events);
@@ -86,28 +89,14 @@ namespace lo
         sockaddr_in server_addr;
         sockaddr_in client_addr;
         socklen_t addrlen;
-        pthread_pool pool;  //pthread pool
+        ThreadPool pool;  //pthread pool
         
         // No copying allowed
-        lo_server(const lo_server &);
-        lo_server & operator=(const lo_server &);
+        LoServer(const LoServer &);
+        LoServer & operator=(const LoServer &);
         
     };
-    
-    //error msg
-    class error
-    {
-    public:
-        error(){}
-        error(std::string module_,std::string function_,std::string msg_):
-        module(module_),function(function_),msg(msg_){}
-        friend std::ostream & operator << (std::ostream & output,const error & e);
-    private:
-        std::string module;
-        std::string function;
-        std::string msg;
-        
-    };
+
     
 } //namespace lo
 

@@ -1,5 +1,5 @@
 //
-// Created by leviathan on 3/26/16.
+// Created by leviathan on 16/3/24.
 //
 #include "pthread_pool.h"
 #include "lo.h"
@@ -7,65 +7,66 @@
 namespace lo
 {
     
-    std::queue<int > pthread_pool::task_list;
-    int pthread_pool::epoll_fd=0;
-    bool pthread_pool::shutdown= false;
-    pthread_mutex_t pthread_pool::pthread_mutex=PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t pthread_pool::pthread_cond=PTHREAD_COND_INITIALIZER;
+    std::queue<int > ThreadPool::task_list_;
+    int ThreadPool::io_event_fd_=0;
+    bool ThreadPool::shutdown_= false;
+    pthread_mutex_t ThreadPool::thread_mutex_=PTHREAD_MUTEX_INITIALIZER;
+    pthread_cond_t ThreadPool::thread_cond_=PTHREAD_COND_INITIALIZER;
     
-    pthread_pool::pthread_pool(int num)
+    ThreadPool::ThreadPool(int num)
     {
-        pthread_num=num;
-        pthread_id=new pthread_t[pthread_num];
-        create_pool();
+        thread_num_=num;
+        thread_id_=new pthread_t[thread_num_];
+        CreatePool();
     }
     
-    void pthread_pool::set_pthread_num(int num)
+    void ThreadPool::SetThreadNum(int num)
     {
-        pthread_num=num;
+        thread_num_=num;
     }
     
-    void pthread_pool::set_kq_fd(int kq_fd)
+    void ThreadPool::SetIoEventFd(int event_fd)
     {
-        kq_fd=kq_fd;
+        io_event_fd_=event_fd;
     }
+
     //create pthread pool
-    void pthread_pool::create_pool()
+    void ThreadPool::CreatePool()
     {
-        for (int i = 0; i <pthread_num ; ++i)
+        for (int i = 0; i <thread_num_; ++i)
         {
-            pthread_create(&pthread_id[i], NULL, pthread_call, NULL);
+            pthread_create(&thread_id_[i], NULL,ThreadCall, NULL);
         }
     }
     
     //add fd to task_list
-    void pthread_pool::add_task(int fd)
+    void ThreadPool::AddTask(int fd)
     {
-        pthread_mutex_lock(&pthread_mutex);
-        task_list.push(fd);
-        pthread_mutex_unlock(&pthread_mutex);
-        pthread_cond_signal(&pthread_cond);
+        pthread_mutex_lock(&thread_mutex_);
+        task_list_.push(fd);
+        pthread_mutex_unlock(&thread_mutex_);
+        pthread_cond_signal(&thread_cond_);
     }
     
-    void * pthread_pool::pthread_call(void *data)
+    void * ThreadPool::ThreadCall(void *data)
     {
         while(1)
         {
-            pthread_mutex_lock(&pthread_mutex);
-            while(task_list.size()==0)
-                pthread_cond_wait(&pthread_cond,&pthread_mutex);
+            pthread_mutex_lock(&thread_mutex_);
+            while(task_list_.size()==0)
+                pthread_cond_wait(&thread_cond_,&thread_mutex_);
             
-            int fd=task_list.front();
-            task_list.pop();
-            pthread_mutex_unlock(&pthread_mutex);
+            int fd=task_list_.front();
+            task_list_.pop();
+            pthread_mutex_unlock(&thread_mutex_);
             
-            socket_handle(fd);//handle funciton
+            HandleSocket(fd);//handle funciton
         }
     }
     
     
     
-    void pthread_pool::socket_handle(int data_fd)
+    void ThreadPool::HandleSocket(int data_fd)
     {
         int n=0,nread=0;
         char * request=new char[MAX_BUFFSIZE];
