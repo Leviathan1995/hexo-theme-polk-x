@@ -16,7 +16,7 @@ namespace lo {
     int MAX_BUFFSIZE = 1024 * 1024;
 
     struct kevent triggered_event[MAX_EVENTS]; //event that was triggered
-
+    struct kevent monitor_event[MAX_EVENTS];
 
 
     std::map<std::string,std::string> LoServer::config_;
@@ -54,12 +54,14 @@ namespace lo {
         Bind(listen_fd_, (struct sockaddr *) &server_addr_, sizeof(server_addr_));
         Listen(listen_fd_, MAX_BACKLOG);
 
-        ioevent_fd_ = KqueueCreate();           //create listen kqueue fd
+        ioevent_fd_ = KqueueCreate();                                               //create listen kqueue fd
 
         struct kevent ev;
         EV_SET(&ev, listen_fd_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);          //initialize kevent structure
+        int n = kevent(ioevent_fd_,&ev, 1, NULL, 0, NULL);
+        FATALIF(n,"LoServer","Init()","Kqueue modify failed.");
 
-        pool_.CreatePool();//create pthread pool
+        pool_.CreatePool();     //create thread pool
         pool_.SetIoEventFd(ioevent_fd_);
 
     }
@@ -102,27 +104,30 @@ namespace lo {
             nev_= kevent(ioevent_fd_, NULL, 0, triggered_event, MAX_EVENTS, NULL);
 
             if (nev_ < 0) {
-                    ERROR("LoServer","Work()","No Event Triggering");
+                    ERROR("No Event Triggering");
             }
             else if (nev_ > 0) {
                 for (int i = 0; i < nev_; i++) {
                     if (triggered_event[i].flags & EV_ERROR)    //error
                     {
-                        ERROR("LoServer", "Work()", "kevent() Error.");
+                        ERROR("kevent() Error.");
                         break;
                     }
                     else if (triggered_event[i].ident == listen_fd_)    //connect comming
                     {
                         connect_fd_ = Accept(listen_fd_, (struct sockaddr *) &client_addr_, &addrlen_);
-                        INFO("LoServer","Work()","Establish  Connection Success.")
+                        INFO("Establish  Connection Success.")
                         SetNonblocking(connect_fd_);
 
                         struct kevent ev;
                         EV_SET(&ev, connect_fd_, EVFILT_READ, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, 0);
+                        int n = kevent(ioevent_fd_,&ev, 1, NULL, 0, NULL);
+                        FATALIF(n,"Kqueue modify failed.");
+
                     }
                     else if (triggered_event[i].flags & EVFILT_READ)    //data comming
                     {
-                        INFO("LoServer","Work()","Data Comming.");
+                        INFO("Data Comming.");
                         pool_.AddTask(int(triggered_event[i].ident));
                     }
                 }

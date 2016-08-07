@@ -23,7 +23,7 @@
 
 
 #include "http.h"
-#include "pthread_pool.h"
+#include "thread_pool.h"
 #include "log.h"
 
 namespace lo
@@ -38,7 +38,7 @@ namespace lo
     extern int MAX_BUFFSIZE;
     
     extern struct kevent triggered_event[]; //event that was triggered
-    
+    extern struct kevent monitor_event[];
     //
     // http server
     //
