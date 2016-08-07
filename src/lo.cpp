@@ -2,7 +2,6 @@
 // Created by leviathan on 16/3/24.
 //
 
-#include <search.h>
 #include "lo.h"
 
 namespace lo {
@@ -10,41 +9,17 @@ namespace lo {
     //global variable
     //
 
-    pthread_mutex_t flage_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-    int MAX_EVENTS = 1024;  // epoll listen events
+    const int MAX_EVENTS = 1024;
     int MAX_BACKLOG = 100;
     int MAX_CONNECTS = 1;
     int MAX_BUFFSIZE = 1024 * 1024;
 
-    struct kevent monitor_event[9999];   //event we want to monitor
-    struct kevent triggered_event[9999]; //event that was triggered
+    struct kevent triggered_event[MAX_EVENTS]; //event that was triggered
 
-    int flags[9999] = {0};
 
-    std::string root = "/Users/leviathan/lo_root";
 
-    std::map<int, int> id_fd;
-
-    //
-    //global funciton
-    //
-
-    int find_free() {
-        for (int i = 0; i < 9999; i++) {
-            if (flags[i] == 0) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    int find_max() {
-        auto end = id_fd.rbegin();
-        int max = end->first;
-        return max + 1;
-    }
-
+    std::map<std::string,std::string> LoServer::config_;
     //
     //web server module
     //
@@ -54,35 +29,44 @@ namespace lo {
     }
 
     void LoServer::Init() {
-        listen_fd = Socket(AF_INET, SOCK_STREAM, 0);
-        SetNonblocking(listen_fd);  //set a socket as nonblocking
-        SetReuseaddr(listen_fd);    //set a socket as SO_REUSEADDR
 
-        //init server addr
-        bzero(&server_addr, sizeof(server_addr));
-        server_addr.sin_family = AF_INET;
-        server_addr.sin_port = htons(8080);
-        server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        //parsing config
+        std::string line;
+        std::ifstream file("/Users/hashdata/Code/Django1995/Lo/lo.config");
+        std::regex re("(.*)=(.*)");
+        while(std::getline(file,line)){
+            std::smatch sm;
+            std::regex_match(line,sm,re);
+            config_[sm[1]]=sm[2];
+        }
 
-        //bind socket with server_addr
-        Bind(listen_fd, (struct sockaddr *) &server_addr, sizeof(server_addr));
-        Listen(listen_fd, MAX_BACKLOG);
+        listen_fd_ = Socket(AF_INET, SOCK_STREAM, 0);
+        SetNonblocking(listen_fd_);  //set a socket as Nonblocking
+        SetReuseaddr(listen_fd_);    //set a socket as SO_REUSEADDR
 
-        kq_fd = KqueueCreate(); //create listen kqueue fd
+        //init server address
+        bzero(&server_addr_, sizeof(server_addr_));
+        server_addr_.sin_family = AF_INET;
+        server_addr_.sin_port = htons(8080);
+        server_addr_.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-        EV_SET(&monitor_event[0], listen_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0); //initalise kevent structure
-        flags[0] = 1;
-        id_fd[0] = listen_fd;
+        //bind socket with server address
+        Bind(listen_fd_, (struct sockaddr *) &server_addr_, sizeof(server_addr_));
+        Listen(listen_fd_, MAX_BACKLOG);
 
-        pool.CreatePool();//create pthread pool
-        pool.SetIoEventFd(kq_fd);
+        ioevent_fd_ = KqueueCreate();           //create listen kqueue fd
+
+        struct kevent ev;
+        EV_SET(&ev, listen_fd_, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);          //initialize kevent structure
+
+        pool_.CreatePool();//create pthread pool
+        pool_.SetIoEventFd(ioevent_fd_);
 
     }
 
 
     void LoServer::Work() {
         //event loop
-        //loop event
         for (;;) {
             /*
             int nfds=lo_epoll_wait(epoll_fd,epoll_events,MAX_EVENTS,-1);
@@ -115,48 +99,31 @@ namespace lo {
                 }
             }
             */
-            int max = find_max();
-            pthread_mutex_lock(&flage_mutex);
-            nev = kevent(kq_fd, monitor_event, find_max(), triggered_event, 9999, NULL);
-            pthread_mutex_unlock(&flage_mutex);
+            nev_= kevent(ioevent_fd_, NULL, 0, triggered_event, MAX_EVENTS, NULL);
 
-            if (nev < 0) {
-
+            if (nev_ < 0) {
+                    ERROR("LoServer","Work()","No Event Triggering");
             }
-
-            else if (nev > 0) {
-                for (int i = 0; i < nev; i++) {
+            else if (nev_ > 0) {
+                for (int i = 0; i < nev_; i++) {
                     if (triggered_event[i].flags & EV_ERROR)    //error
                     {
-
-                        ERROR("LoServer", "kevent", "kqueue error");
+                        ERROR("LoServer", "Work()", "kevent() Error.");
                         break;
-                        //exit(-1);
                     }
-                    else if (triggered_event[i].ident == listen_fd)    //connect comming
+                    else if (triggered_event[i].ident == listen_fd_)    //connect comming
                     {
-                        connect_fd = Accept(listen_fd, (struct sockaddr *) &client_addr, &addrlen);
-                        std::cout << "connect fd: " << connect_fd << std::endl;
-                        SetNonblocking(connect_fd);
-                        //
-                        pthread_mutex_lock(&flage_mutex);
-                        EV_SET(&monitor_event[find_free()], connect_fd, EVFILT_READ, EV_ADD | EV_ENABLE | EV_ONESHOT, 0,
-                               0, 0);
-                        id_fd[find_free()] = connect_fd;
-                        flags[find_free()] = 1;
-                        pthread_mutex_unlock(&flage_mutex);
+                        connect_fd_ = Accept(listen_fd_, (struct sockaddr *) &client_addr_, &addrlen_);
+                        INFO("LoServer","Work()","Establish  Connection Success.")
+                        SetNonblocking(connect_fd_);
 
+                        struct kevent ev;
+                        EV_SET(&ev, connect_fd_, EVFILT_READ, EV_ADD | EV_ENABLE | EV_ONESHOT, 0, 0, 0);
                     }
                     else if (triggered_event[i].flags & EVFILT_READ)    //data comming
                     {
-                        std::cout << "data comming fd: " << triggered_event[i].ident << std::endl;
-                        pool.AddTask(int(triggered_event[i].ident));
-
-                        pthread_mutex_lock(&flage_mutex);
-                        flags[id_fd.find(int(triggered_event[i].ident))->first] = 0;
-                        id_fd.erase(id_fd.find(int(triggered_event[i].ident))->first);
-                        pthread_mutex_unlock(&flage_mutex);
-
+                        INFO("LoServer","Work()","Data Comming.");
+                        pool_.AddTask(int(triggered_event[i].ident));
                     }
                 }
             }
@@ -169,7 +136,7 @@ namespace lo {
     int LoServer::Socket(int family, int type, int protocol) {
         int fd = socket(family, type, protocol);
         if (fd == -1) {
-            ERROR("LoServer", "Socket", "Create Socket file descriptor failed.");
+            ERROR("LoServer", "Socket()", "Create Socket File Descriptor Failed.");
             exit(-1);
         }
         else
@@ -179,12 +146,12 @@ namespace lo {
     void LoServer::SetNonblocking(int socket_fd) {
         int flags;
         if ((flags = fcntl(socket_fd, F_GETFL, 0)) < 0) {
-            ERROR("LoServer", "SetNonblocking", "F_GETFL error");
+            ERROR("LoServer", "SetNonblocking()", "F_GETFL Error");
             exit(-1);
         }
         flags |= O_NONBLOCK;
         if (fcntl(socket_fd, F_SETFL, flags) < 0) {
-            ERROR("LoServer", "SetNonblocking", "F_SETFL error");
+            ERROR("LoServer", "SetNonblocking()", "F_SETFL Error");
             exit(-1);
         }
     }
@@ -192,21 +159,21 @@ namespace lo {
     void LoServer::SetReuseaddr(int socket_fd) {
         int on = 1, ret;
         if ((ret = setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) == -1) {
-            ERROR("LoServer", "SerReuseaddr", "SO_REUSEADDR error");
+            ERROR("LoServer", "SerReuseaddr()", "SO_REUSEADDR Error");
             exit(-1);
         }
     }
 
     void LoServer::Listen(int listen_fd, int backlog) {
         if (listen(listen_fd, backlog) == -1) {
-            ERROR("LoServer", "Listen", "socket listen failed.");
+            ERROR("LoServer", "Listen()", "Socket Listen Failed.");
             exit(-1);
         }
     }
 
     void LoServer::Bind(int socket_fd, const struct sockaddr *addr, socklen_t addrlen) {
         if (bind(socket_fd, addr, addrlen) == -1) {
-            ERROR("LoServer", "Bind", "socket bind failed.");
+            ERROR("LoServer", "Bind()", "Socket Bind Failed.");
             exit(-1);
         }
     }
@@ -220,7 +187,7 @@ namespace lo {
                     break;
                 }
                 else {
-                    ERROR("LoServer", "Accept", "accept socket failed.");
+                    ERROR("LoServer", "Accept()", "Accept Socket Failed.");
                     break;
                 }
             }
@@ -233,7 +200,7 @@ namespace lo {
     int LoServer::KqueueCreate() {
         int kqueue_fd = kqueue();
         if (kqueue_fd == -1) {
-            ERROR("LoServer", "KqueueCreate", "create kqueue fd failed.");
+            ERROR("LoServer", "KqueueCreate()", "Create Kqueue Fd Failed.");
             exit(-1);
         }
         return kqueue_fd;

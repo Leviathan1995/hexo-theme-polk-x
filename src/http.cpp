@@ -98,12 +98,12 @@ namespace lo
             
             //read file
             std::fstream file;
-            file.open(root+str_file,std::ios::binary|std::ios::in);
+            file.open(LoServer::GetPath()+str_file,std::ios::binary|std::ios::in);
             if(!file) //404
             {
                 response.status=HTTP_NOT_FIND;
                 std::cout << "open file failed!" << std::endl;
-                file.open(root+"/NOT_FOUND.html",std::ios::binary|std::ios::in);
+                file.open(LoServer::GetPath()+"/NOT_FOUND.html",std::ios::binary|std::ios::in);
                 file.seekg(0, std::ios::end);
                 content_length = file.tellg();
                 content = new char[content_length];
