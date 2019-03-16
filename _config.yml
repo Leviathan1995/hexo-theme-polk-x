@@ -1,0 +1,18 @@
+# Favicon
+favicon:
+
+# SEO
+keywords:
+
+# Site title separator
+separator: '-'
+
+# RSS
+rss: /atom.xml
+
+# Nav menu
+menu:
+  Home: /
+  Summary: /summary
+  About: /about
+  RSS: /atom.xml

@@ -1,0 +1,149 @@
+body {
+  margin: 0;
+}
+
+html, body, .container {
+  height: 100%;
+  font-family: Hiragino Sans GB, Microsoft YaHei, WenQuanYi, Airal, sans-serif;
+  color: #000;
+}
+
+.container {
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+a {
+  color: #000;
+  text-decoration: none;
+}
+
+.home {
+  display: table;
+  width: 100%;
+  height: 100%;
+
+  .info {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+
+    .logo {
+      font-size: 2.5em;
+      font-weight: bold;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: gray;
+    }
+
+    .sns {
+      margin: 1em auto;
+
+      a {
+        width: 55px;
+        color: #999;
+        display: inline-block;
+
+        &:hover {
+          color: #000;
+        }
+      }
+    }
+
+    footer {
+      border: 0;
+      color: #000;
+      padding: 0;
+    }
+  }
+}
+
+.page {
+  margin: 0 20px;
+  margin-bottom: 2em;
+  
+  p {
+    line-height: 1.5em;
+  }
+}
+
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+
+/* Tomorrow Comment */
+.highlight .comment,
+.highlight .quote {
+  color: #408090;
+}
+
+/* Tomorrow Red */
+.highlight .variable,
+.highlight .template-variable,
+.highlight .tag,
+.highlight .name,
+.highlight .selector-id,
+.highlight .selector-class,
+.highlight .regexp,
+.highlight .deletion {
+  color: #c82829;
+}
+
+/* Tomorrow Orange */
+.highlight .number,
+.highlight .built_in,
+.highlight .builtin-name,
+.highlight .literal,
+.highlight .type,
+.highlight .params,
+.highlight .meta,
+.highlight .link {
+  color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.highlight .attribute {
+  color: #eab700;
+}
+
+/* Tomorrow Green */
+.highlight .string,
+.highlight .symbol,
+.highlight .bullet,
+.highlight .addition {
+  color: #718c00;
+}
+
+/* Tomorrow Blue */
+.highlight .title,
+.highlight .section {
+  color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.highlight .keyword,
+.highlight .selector-tag {
+  color: #8959a8;
+}
+
+.highlight {
+  display: block;
+  overflow-x: auto;
+  background: white;
+  color: #000;
+  padding: 0.5em;
+}
+
+.highlight .emphasis {
+  font-style: italic;
+}
+
+.highlight .strong {
+  font-weight: bold;
+}
+
+@import "_partial/header";
+@import "_partial/post";
+@import "_partial/archive";
+@import "_partial/paginator";
+@import "_partial/footer";

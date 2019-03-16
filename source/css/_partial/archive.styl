@@ -1,0 +1,37 @@
+.article-title {
+}
+
+.archive {
+  padding: 0 20px;
+  margin-bottom: 1em;
+
+  .post-archive {
+    list-style: none;
+    padding: 0;
+
+    .post-item {
+      margin: 10px 0;
+      line-height: 1.5;
+
+      .post-date {
+        float: right;
+      
+        @media screen and (max-width: 425px) {
+          float: none;
+          margin-left: 0.5em;
+          font-size: 90%;
+          color: #999;
+        }
+      }
+
+      .post-title {
+        /* border-bottom: 1px dotted; */
+  	    text-decoration: none;
+
+        &:hover {
+          border-bottom: 1px solid;
+        }
+      }
+    }
+  }
+}
